@@ -10,6 +10,6 @@
 
 @implementation AeroFBlePlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar>*)registrar {
-  [SwiftAeroFBlePlugin registerWithRegistrar:registrar];
+    [SwiftAeroPlugin registerWithRegistrar:registrar];
 }
 @end

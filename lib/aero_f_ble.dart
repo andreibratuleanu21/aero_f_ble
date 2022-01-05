@@ -1,14 +1,3 @@
+library aero_f_ble;
 
-import 'dart:async';
-
-import 'package:flutter/services.dart';
-
-class AeroFBle {
-  static const MethodChannel _channel =
-      const MethodChannel('aero_f_ble');
-
-  static Future<String?> get platformVersion async {
-    final String? version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-}
+export 'src/aero_f_ble_main.dart';

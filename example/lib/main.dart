@@ -15,6 +15,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  late StreamSubscription<List<BtDevice>> _scanStream;
 
   @override
   void initState() {
@@ -22,16 +23,28 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
+  @override
+  void dispose() {
+    _scanStream.cancel();
+    super.dispose();
+  }
+
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
+    String platform;
+    String version;
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      platformVersion =
-          await AeroFBle.platformVersion ?? 'Unknown platform version';
+      platform = await AeroFBle.platform;
+      version = await AeroFBle.platformVersion;
+      _scanStream = AeroFBle.scanUpdates.listen((List<BtDevice> devices) {
+        print("New devices list:");
+        devices.forEach((device) => print(device.toString()));
+      });
     } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
+      platform = 'Failed to get platform and/or version.';
+      version = '';
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -40,7 +53,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = platformVersion;
+      _platformVersion = platform + " " + version;
     });
   }
 
@@ -52,7 +65,23 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Column(
+            children: [
+              Text('Running on: $_platformVersion\n'),
+              ElevatedButton(
+                onPressed: () {
+                  AeroFBle.startScan(timeout: 20000, allowEmptyName: false);
+                },
+                child: const Text('Start'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  AeroFBle.stopScan();
+                },
+                child: const Text('Stop'),
+              ),
+            ]
+          ),
         ),
       ),
     );

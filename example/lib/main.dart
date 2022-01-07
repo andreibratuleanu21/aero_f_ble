@@ -15,7 +15,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
-  late StreamSubscription<List<BtDevice>> _scanStream;
+  late StreamSubscription<BtDevice> _scanStream;
 
   @override
   void initState() {
@@ -38,9 +38,9 @@ class _MyAppState extends State<MyApp> {
     try {
       platform = await AeroFBle.platform;
       version = await AeroFBle.platformVersion;
-      _scanStream = AeroFBle.scanUpdates.listen((List<BtDevice> devices) {
-        print("New devices list:");
-        devices.forEach((device) => print(device.toString()));
+      print(await AeroFBle.isAvailable);
+      _scanStream = AeroFBle.scanUpdates.listen((BtDevice device) {
+        print(device.toString());
       });
     } on PlatformException {
       platform = 'Failed to get platform and/or version.';
@@ -65,23 +65,23 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Plugin example app'),
         ),
         body: Center(
-          child: Column(
-            children: [
-              Text('Running on: $_platformVersion\n'),
-              ElevatedButton(
-                onPressed: () {
-                  AeroFBle.startScan(timeout: 20000, allowEmptyName: false);
-                },
-                child: const Text('Start'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  AeroFBle.stopScan();
-                },
-                child: const Text('Stop'),
-              ),
-            ]
-          ),
+          child: Column(children: [
+            Text('Running on: $_platformVersion\n'),
+            ElevatedButton(
+              onPressed: () {
+                print("OK!");
+                AeroFBle.startScan(allowEmptyName: false);
+              },
+              child: const Text('Start'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                print("Nya!");
+                AeroFBle.stopScan();
+              },
+              child: const Text('Stop'),
+            ),
+          ]),
         ),
       ),
     );

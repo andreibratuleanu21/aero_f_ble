@@ -1,4 +1,4 @@
-package com.clauditsoftware.aero_f_ble_example
+package net.bytex.aero_f_ble_example
 
 import io.flutter.embedding.android.FlutterActivity
 

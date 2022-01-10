@@ -1,8 +1,7 @@
 <br>
-<p align="center">
-<img alt="AERO F BLE logo" src="https://github.com/andreibratuleanu21/aero_f_ble/blob/master/site/aero_f.png?raw=true" />
-</p>
-<br><br>
+<img alt="AERO F BLE logo" width="300px" src="https://github.com/andreibratuleanu21/aero_f_ble/blob/master/site/aero_f.png?raw=true" />
+<br>
+<br>
 
 # Aero Flutter BLE
 

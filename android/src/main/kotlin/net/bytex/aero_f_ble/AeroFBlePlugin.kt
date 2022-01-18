@@ -50,10 +50,10 @@ class AeroFBlePlugin: FlutterPlugin, MethodCallHandler, EventChannel.StreamHandl
         result.success(android.os.Build.VERSION.RELEASE)
       }
       "startScan" -> {
-        val serviceUuids : List<String> = call.argument<List<String>>("serviceUUIDs") ?: emptyList()
+        val serviceUuids : List<String> = call.argument<List<String>>("UUIDs") ?: emptyList()
         val timeout : Long = (call.argument<Int>("timeout") ?: 0).toLong()
         val duplicates : Boolean = call.argument<Boolean>("duplicates") ?: false
-        val allowEmpty : Boolean = call.argument<Boolean>("allowEmptyName") ?: true
+        val allowEmpty : Boolean = call.argument<Boolean>("allowEmpty") ?: true
         val options : Map<String, Any>? = call.argument<Map<String, Any>>("android")
         btManager.startScan(serviceUuids, timeout, duplicates, allowEmpty, options)
         result.success(true)

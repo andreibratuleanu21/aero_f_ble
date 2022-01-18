@@ -67,14 +67,14 @@ class _MyAppState extends State<MyApp> {
         body: Center(
           child: Column(children: [
             Text('Running on: $_platformVersion\n'),
-            ElevatedButton(
+            RaisedButton(
               onPressed: () {
                 print("OK!");
                 AeroFBle.startScan(allowEmptyName: false);
               },
               child: const Text('Start'),
             ),
-            ElevatedButton(
+            RaisedButton(
               onPressed: () {
                 print("Nya!");
                 AeroFBle.stopScan();

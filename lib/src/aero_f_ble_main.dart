@@ -4,9 +4,10 @@ import 'package:flutter/services.dart';
 
 // name is State. BOND State.
 enum BondState {
-  NONE,
-  BONDING,
-  BONDED
+  DISCONNECTED,
+  CONNECTING,
+  CONNECTED,
+  DISCONNECTING
 }
 
 enum DeviceType {
@@ -65,13 +66,15 @@ class AeroFBle {
     List<String> serviceUUIDs = const [],
     int timeout = 0,
     bool allowEmptyName = true,
+    bool allowDuplicates = false,
     AndroidScanOptions? androidOptions
   }) async {
     final AndroidScanOptions aso = androidOptions ?? AndroidScanOptions();
     final Map<String, dynamic> params = <String, dynamic>{
-      "serviceUUIDs": serviceUUIDs,
+      "UUIDs": serviceUUIDs,
       "timeout": timeout,
-      "allowEmptyName": allowEmptyName,
+      "allowEmpty": allowEmptyName,
+      "duplicates": allowDuplicates,
       "android": <String, dynamic>{
         "mode": aso.powerMode.index - 1
       }

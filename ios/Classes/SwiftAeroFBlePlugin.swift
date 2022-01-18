@@ -35,7 +35,7 @@ public class SwiftAeroPlugin: NSObject, FlutterPlugin {
                 guard let data: [String:Any] = call.arguments as? Dictionary<String, Any> else {
                     throw BleError(message: "Invalid argument for method ['startScan']")
                 }
-                guard let serviceUUIDs: [String]? = data["serviceUUID"] as? [String]? else {
+                guard let serviceUUIDs: [String]? = data["UUIDs"] as? [String]? else {
                     throw BleError(message: "Invalid payload for ['serviceUUIDs']")
                 }
                 guard let timeout: Int = data["timeout"] as? Int else {
@@ -44,7 +44,7 @@ public class SwiftAeroPlugin: NSObject, FlutterPlugin {
                 guard let duplicates: Bool = data["duplicates"] as? Bool else {
                     throw BleError(message: "Invalid payload for ['allowDuplicates']")
                 }
-                guard let allowEmpty: Bool = data["allowEmptyName"] as? Bool else {
+                guard let allowEmpty: Bool = data["allowEmpty"] as? Bool else {
                     throw BleError(message: "Invalid payload for ['allowEmptyName']")
                 }
                 let isOk: Bool = _bleManager.startScan(serviceUUIDs: serviceUUIDs, timeout: timeout, duplicates: duplicates, allowEmpty: allowEmpty)
@@ -59,13 +59,11 @@ public class SwiftAeroPlugin: NSObject, FlutterPlugin {
                 print("meow")
                 //_bleManager.getAvailableDevices(result)
             case "connect":
-                guard let uuidString: String = call.arguments as? String else {
-                    throw BleError(message: "Invalid argument for method [connect]")
-                }
-                _bleManager.connect(
-                    uuidString: uuidString,
-                    resultCallback: result
-                )
+                throw BleError(message: "Invalid argument for method [connect]")
+//                _bleManager.connect(
+//                    uuidString: uuidString,
+//                    resultCallback: result
+//                )
             case "disconnect":
                 _bleManager.disconnect(result)
             case "sendBytes":

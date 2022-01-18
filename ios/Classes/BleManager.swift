@@ -10,6 +10,45 @@ import Foundation
 import CoreBluetooth
 import Flutter
 
+class ScanResult {
+    let id: String
+    let name: String
+    let rssi: Int
+    let txPower: Int
+    let connectable: Bool
+    let rawAdvertisingBytes: [UInt8]
+    let type: Int
+    let bondState: Int
+    
+    init(id: String, name: String?, rssi: Int, txPower: Int?, connectable: Int?, rawAdvertisingBytes: [UInt8], bondState: Int) {
+        self.id = id
+        self.type = 0
+        self.name = name ?? "UNKNOWN"
+        self.rssi = rssi
+        self.txPower = txPower ?? -256
+        self.bondState = bondState
+        self.connectable = connectable == 1
+        self.rawAdvertisingBytes = rawAdvertisingBytes
+    }
+    
+    func toStringDisplay() -> String {
+        let template = """
+            { \
+                "id": "%@", \
+                "type": %d, \
+                "mac": "", \
+                "name": "%@", \
+                "rssi": %d, \
+                "txPwr": %d, \
+                "bond": %@, \
+                "connect": %d, \
+                "adv": [], \
+            }
+        """;
+        return String(format: template, self.id, self.type, self.name, self.rssi, self.txPower, self.bondState, self.rawAdvertisingBytes);
+    }
+}
+
 class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, FlutterStreamHandler {
     
     private let _executor: AeroExecutor = AeroExecutor()
@@ -42,15 +81,15 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, Flut
         }
     }
     
-    private var _availableDevices: [CBPeripheral] = []
-    private var _availableDevicesMap: [[String:String]] {
-        get {
-            return _availableDevices.map({
-                (device: CBPeripheral) -> [String:String] in
-                return device.toMap()
-            })
-        }
-    }
+//    private var _availableDevices: [CBPeripheral] = []
+//    private var _availableDevicesMap: [[String:String]] {
+//        get {
+//            return _availableDevices.map({
+//                (device: CBPeripheral) -> [String:String] in
+//                return device.toMap()
+//            })
+//        }
+//    }
 
     private var _connectedDevice: CBPeripheral?
     var connectedDevice: [String:String]? {
@@ -70,7 +109,6 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, Flut
     }
     
     func startScan(serviceUUIDs: [String]?, timeout: Int, duplicates: Bool, allowEmpty: Bool) -> Bool {
-        _availableDevices.removeAll()
         allowEmptyName = allowEmpty;
         var cbUUIDs: [CBUUID] = []
         if serviceUUIDs != nil {
@@ -102,33 +140,33 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, Flut
         return _btManager?.state == .poweredOn && _btManager?.isScanning == false;
     }
     
-    func connect(uuidString: String, resultCallback: @escaping FlutterResult) {
-        _executor.add { [weak self] in
-            do {
-                let uuid: UUID = UUID(uuidString: uuidString)!
-                
-                guard let peripheral: CBPeripheral = self?._availableDevices.first(where: {
-                    (peripheral: CBPeripheral) -> Bool in
-                    return peripheral.identifier == uuid
-                }) else {
-                    throw BleError(message: "Device not found!")
-                }
-                
-                self?._resultCallback = resultCallback
-                self?._btManager?.connect(peripheral)
-                                      
-            } catch let e as BleError {
-                resultCallback(e.toFlutterError())
-            } catch let e {
-                resultCallback(FlutterError(
-                    code: "BLE_ERROR",
-                    message: e.localizedDescription,
-                    details: "connect"
-                ))
-            }
-        }
-        
-    }
+//    func connect(uuidString: String, resultCallback: @escaping FlutterResult) {
+//        _executor.add { [weak self] in
+//            do {
+//                let uuid: UUID = UUID(uuidString: uuidString)!
+//
+//                guard let peripheral: CBPeripheral = self?._availableDevices.first(where: {
+//                    (peripheral: CBPeripheral) -> Bool in
+//                    return peripheral.identifier == uuid
+//                }) else {
+//                    throw BleError(message: "Device not found!")
+//                }
+//
+//                self?._resultCallback = resultCallback
+//                self?._btManager?.connect(peripheral)
+//
+//            } catch let e as BleError {
+//                resultCallback(e.toFlutterError())
+//            } catch let e {
+//                resultCallback(FlutterError(
+//                    code: "BLE_ERROR",
+//                    message: e.localizedDescription,
+//                    details: "connect"
+//                ))
+//            }
+//        }
+//
+//    }
     
     func sendBytes(_ bytes: Data, resultCallback: @escaping FlutterResult) {
         _executor.add(onCompleteNext: true) { [weak self] in
@@ -226,17 +264,21 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, Flut
         advertisementData: [String : Any],
         rssi RSSI: NSNumber
     ) {
-        let alreadyExists: Bool = _availableDevices.contains(
-            where: { $0.identifier == peripheral.identifier }
-        )
-        if !alreadyExists {
-            if allowEmptyName == false && peripheral.name == nil {
-                return;
-            }
-            _availableDevices.append(peripheral)
-            guard let sink = sink else { return }
-            sink(_availableDevicesMap)
+        guard let sink = sink else { return }
+        if allowEmptyName == false && peripheral.name == nil {
+            return;
         }
+        let result = ScanResult(
+            id: peripheral.identifier.uuidString,
+            name: peripheral.name,
+            rssi: RSSI.intValue,
+            txPower: advertisementData["CBAdvertisementDataTxPowerLevelKey"] as? Int,
+            connectable: advertisementData["CBAdvertisementDataIsConnectable"] as? Int,
+            rawAdvertisingBytes: [],
+            bondState: peripheral.state.rawValue
+        );
+        print(result.toStringDisplay())
+        sink(result.toStringDisplay())
     }
     
     func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
@@ -271,7 +313,7 @@ class BleManager: NSObject, CBCentralManagerDelegate, CBPeripheralDelegate, Flut
 }
 
 extension CBPeripheral {
-    
+
     func toMap() -> [String: String] {
         return [
             "id": identifier.uuidString,
